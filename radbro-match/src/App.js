@@ -36,11 +36,11 @@ const Grid = ({ grid, handleTileClick, selectedTile }) => (
 function App() {
   // Replace these with your NFT image URLs
   const nftImages = [
-    'https://example.com/nft1.png',
-    'https://example.com/nft2.png',
-    'https://example.com/nft3.png',
-    'https://example.com/nft4.png',
-    'https://example.com/nft5.png',
+    'https://i.seadn.io/s/raw/files/1b3db129c621b308b6ca77c761010562.png?auto=format&dpr=1&w=2048',
+    'https://i.seadn.io/s/raw/files/46c0bdbfc4e1fdc800e161597e9f870a.png?auto=format&dpr=1&w=2048',
+    'https://i.seadn.io/s/raw/files/863a51981595de21bdc6933a55a63c32.png?auto=format&dpr=1&w=3840',
+    'https://i.seadn.io/s/raw/files/d44b1c722776727e95ed3b2f202fdf87.png?auto=format&dpr=1&w=3840',
+    'https://i.seadn.io/s/raw/files/d41e3e71bc13c91b67bb3e822c4a8bb9.png?auto=format&dpr=1&w=3840',
   ];
 
   // Initialize 6x6 grid with random NFT images
