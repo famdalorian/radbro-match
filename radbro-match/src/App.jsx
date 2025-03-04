@@ -46,6 +46,7 @@ const Grid = ({
   swappingTiles,
 }) => (
   <div className="grid">
+   
     {grid.map((row, rowIndex) =>
       row.map((image, colIndex) => {
         const swapInfo = swappingTiles.find(([r, c]) => r === rowIndex && c === colIndex);
@@ -75,8 +76,6 @@ const Grid = ({
 // Utility Functions
 const checkMatches = (grid) => {
   const matches = [];
-
-  // Horizontal Matches (3+)
   for (let i = 0; i < 6; i++) {
     let count = 1;
     let startCol = 0;
@@ -91,8 +90,6 @@ const checkMatches = (grid) => {
     }
     if (count >= 3) matches.push({ row: i, cols: Array.from({ length: count }, (_, k) => startCol + k) });
   }
-
-  // Vertical Matches (3+)
   for (let j = 0; j < 6; j++) {
     let count = 1;
     let startRow = 0;
@@ -107,8 +104,6 @@ const checkMatches = (grid) => {
     }
     if (count >= 3) matches.push({ col: j, rows: Array.from({ length: count }, (_, k) => startRow + k) });
   }
-
-  // 2x2 Square Matches
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
       const topLeft = grid[i][j];
@@ -125,7 +120,6 @@ const checkMatches = (grid) => {
       }
     }
   }
-
   return matches;
 };
 
@@ -150,22 +144,62 @@ const createInitialGrid = (images) => {
 };
 
 function App() {
-  const nftImages = [
-    'https://i.seadn.io/s/raw/files/1b3db129c621b308b6ca77c761010562.png?auto=format&dpr=1&w=2048',
-    'https://i.seadn.io/s/raw/files/46c0bdbfc4e1fdc800e161597e9f870a.png?auto=format&dpr=1&w=2048',
-    'https://i.seadn.io/s/raw/files/863a51981595de21bdc6933a55a63c32.png?auto=format&dpr=1&w=3840',
-    'https://i.seadn.io/s/raw/files/d44b1c722776727e95ed3b2f202fdf87.png?auto=format&dpr=1&w=3840',
-    'https://i.seadn.io/s/raw/files/d41e3e71bc13c91b67bb3e822c4a8bb9.png?auto=format&dpr=1&w=3840',
+  const tileSets = [
+    // Set 1: Radbro NFTs (Levels 1-3)
+    [
+      'https://i.seadn.io/s/raw/files/1b3db129c621b308b6ca77c761010562.png?auto=format&dpr=1&w=2048',
+      'https://i.seadn.io/s/raw/files/46c0bdbfc4e1fdc800e161597e9f870a.png?auto=format&dpr=1&w=2048',
+      'https://i.seadn.io/s/raw/files/863a51981595de21bdc6933a55a63c32.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/d44b1c722776727e95ed3b2f202fdf87.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/d41e3e71bc13c91b67bb3e822c4a8bb9.png?auto=format&dpr=1&w=3840',
+    ],
+    // Set 2: Molady NFTs (Levels 4-6)
+    [
+      'https://i.seadn.io/s/raw/files/12d66ecc90acaece8f84c03915dcb0cf.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/ee6097c1412cb01465fa7c13eae63cee.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/365c4b54904af1e318f78dd1fb0268a2.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/e81debeec37c33fc8895a5bed5fa4520.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/5eceb118fc51a8be5954a20ac1921055.png?auto=format&dpr=1&w=3840',
+    ],
+    // Set 3: Kawamii NFTs (Levels 7-9)
+    [
+      'https://i.seadn.io/s/raw/files/9710f595aaf70d8b970b72e250a653bf.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/3ac7de9467480707bb0923b403fdeb39.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/2d4e72f52c7a528f406a51222e0c905c.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/b46fd2fe0fa7240f892770bc164777a0.png?auto=format&dpr=1&w=3840',
+      'https://i.seadn.io/s/raw/files/f6508b27dd3f3d0cc38eae4e12164152.png?auto=format&dpr=1&w=3840',
+    ],
   ];
 
-  const sounds = {
-    swap: new Audio('/Sounds/swoosh.mp3'),
-    match: new Audio('/Sounds/match.mp3'),
-    drop: new Audio('/Sounds/plop.mp3'),
+  const difficulties = {
+    easy: { moves: 25, time: 60, scoreBase: 300 },
+    medium: { moves: 20, time: 45, scoreBase: 500 },
+    hard: { moves: 15, time: 30, scoreBase: 700 },
   };
-  Object.values(sounds).forEach((sound) => (sound.preload = 'auto'));
 
-  const [grid, setGrid] = useState(() => createInitialGrid(nftImages));
+  const sounds = {
+    default: {
+      swap: new Audio('/Sounds/swoosh.mp3'),
+      match: new Audio('/Sounds/match.mp3'),
+      drop: new Audio('/Sounds/plop.mp3'),
+    },
+    level2: {
+      swap: new Audio('/Sounds/swoosh2.mp3'),
+      match: new Audio('/Sounds/match2.mp3'),
+      drop: new Audio('/Sounds/plop2.mp3'),
+    },
+    level3: {
+      swap: new Audio('/Sounds/swoosh3.mp3'),
+      match: new Audio('/Sounds/match3.mp3'),
+      drop: new Audio('/Sounds/plop3.mp3'),
+    },
+  };
+  Object.values(sounds.default).forEach((sound) => (sound.preload = 'auto'));
+  Object.values(sounds.level2).forEach((sound) => (sound.preload = 'auto'));
+  Object.values(sounds.level3).forEach((sound) => (sound.preload = 'auto'));
+
+  const [difficulty, setDifficulty] = useState(null);
+  const [grid, setGrid] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
   const [score, setScore] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
@@ -175,15 +209,21 @@ function App() {
   const [swappingTiles, setSwappingTiles] = useState([]);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const [level, setLevel] = useState(1);
-  const [movesLeft, setMovesLeft] = useState(20);
-  const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
+  const [movesLeft, setMovesLeft] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [gameState, setGameState] = useState('menu');
+  const [gameTitle, setGameTitle] = useState('Radbro Match');
+  const [currentSounds, setCurrentSounds] = useState(sounds.default);
 
   useEffect(() => {
     const unlockAudio = () => {
-      Object.values(sounds).forEach((sound) => {
-        sound.play().then(() => sound.pause()).catch(() => {});
-        sound.currentTime = 0;
-      });
+      Object.values(sounds.default)
+        .concat(Object.values(sounds.level2))
+        .concat(Object.values(sounds.level3))
+        .forEach((sound) => {
+          sound.play().then(() => sound.pause()).catch(() => {});
+          sound.currentTime = 0;
+        });
       setIsAudioUnlocked(true);
       window.removeEventListener('touchstart', unlockAudio);
       window.removeEventListener('click', unlockAudio);
@@ -195,6 +235,49 @@ function App() {
       window.removeEventListener('click', unlockAudio);
     };
   }, []);
+
+  useEffect(() => {
+    if (gameState === 'playing' && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setGameState('lost');
+            setTimeout(resetGame, 2000);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [gameState, timeLeft]);
+
+  const startGame = (mode) => {
+    setDifficulty(mode);
+    const { moves, time } = difficulties[mode];
+    setMovesLeft(moves);
+    setTimeLeft(time);
+    setLevel(1);
+    setScore(0);
+    setGrid(createInitialGrid(tileSets[0]));
+    setGameTitle('Radbro Match');
+    setCurrentSounds(sounds.default);
+    setGameState('playing');
+    document.documentElement.className = `theme-0`;
+  };
+
+  const resetGame = () => {
+    const { moves, time } = difficulties[difficulty];
+    setLevel(1);
+    setScore(0);
+    setMovesLeft(moves);
+    setTimeLeft(time);
+    setGrid(createInitialGrid(tileSets[0]));
+    setGameTitle('Radbro Match');
+    setCurrentSounds(sounds.default);
+    setGameState('playing');
+    document.documentElement.className = `theme-0`;
+  };
 
   const clearAndRefill = async (currentGrid) => {
     let newGrid = [...currentGrid.map(row => [...row])];
@@ -213,7 +296,7 @@ function App() {
             matchedPositions.push([row, col]);
             newGrid[row][col] = null;
           });
-          points += 50; // Bonus for 2x2 square
+          points += 50;
         } else if (match.row !== undefined) {
           match.cols.forEach((col) => {
             matchedPositions.push([match.row, col]);
@@ -236,7 +319,7 @@ function App() {
       totalPoints += points;
       allMatchedPositions = [...allMatchedPositions, ...matchedPositions];
       setMatchedTiles(matchedPositions);
-      if (isAudioUnlocked) sounds.match.play();
+      if (isAudioUnlocked) currentSounds.match.play();
 
       if (matchedPositions.length > 0) {
         const [row, col] = matchedPositions[Math.floor(matchedPositions.length / 2)];
@@ -253,10 +336,11 @@ function App() {
       setMatchedTiles([]);
 
       let droppingPositions = [];
+      const currentTileSet = tileSets[Math.floor((level - 1) / 3) % tileSets.length];
       for (let col = 0; col < 6; col++) {
         let column = newGrid.map(row => row[col]).filter(Boolean);
         while (column.length < 6) {
-          column.unshift(nftImages[Math.floor(Math.random() * nftImages.length)]);
+          column.unshift(currentTileSet[Math.floor(Math.random() * currentTileSet.length)]);
           droppingPositions.push([6 - column.length, col]);
         }
         for (let row = 0; row < 6; row++) {
@@ -264,22 +348,32 @@ function App() {
         }
       }
       setDroppingTiles(droppingPositions);
-      if (isAudioUnlocked) sounds.drop.play();
+      if (isAudioUnlocked) currentSounds.drop.play();
       await new Promise((resolve) => setTimeout(resolve, 600));
       setDroppingTiles([]);
     }
 
     setScore((prev) => {
       const newScore = prev + totalPoints;
-      const scoreGoal = level * 500; // e.g., 500, 1000, 1500 per level
-      if (newScore >= scoreGoal && movesLeft > 0) {
-        setLevel((prevLevel) => prevLevel + 1);
-        setMovesLeft(20);
-        setGameState('won');
-        setTimeout(() => {
-          setGrid(createInitialGrid(nftImages));
-          setGameState('playing');
-        }, 2000);
+      const scoreGoal = difficulties[difficulty].scoreBase * level;
+      if (newScore >= scoreGoal && movesLeft > 0 && timeLeft > 0) {
+        setLevel((prevLevel) => {
+          const newLevel = prevLevel + 1;
+          const tileSetIndex = Math.floor((newLevel - 1) / 3) % tileSets.length;
+          document.documentElement.className = `theme-${tileSetIndex}`;
+          setGameTitle(
+            tileSetIndex === 0 ? 'Radbro Match' : tileSetIndex === 1 ? 'Molady Match' : 'Kawamii Match'
+          );
+          setCurrentSounds(
+            tileSetIndex === 0 ? sounds.default : tileSetIndex === 1 ? sounds.level2 : sounds.level3
+          );
+          setMovesLeft(difficulties[difficulty].moves - Math.floor((newLevel - 1) / 3) * 2);
+          setTimeLeft(difficulties[difficulty].time - Math.floor((newLevel - 1) / 3) * 5);
+          setGrid(createInitialGrid(tileSets[tileSetIndex]));
+          setGameState('won');
+          setTimeout(() => setGameState('playing'), 2000);
+          return newLevel;
+        });
       }
       return newScore;
     });
@@ -296,19 +390,13 @@ function App() {
     if (isAdjacent) {
       const direction = prevRow !== row ? 'vertical' : 'horizontal';
       setSwappingTiles([[prevRow, prevCol, direction], [row, col, direction]]);
-      if (isAudioUnlocked) sounds.swap.play();
+      if (isAudioUnlocked) currentSounds.swap.play();
 
       setMovesLeft((prev) => {
         const newMoves = prev - 1;
         if (newMoves <= 0) {
           setGameState('lost');
-          setTimeout(() => {
-            setGrid(createInitialGrid(nftImages));
-            setScore(0);
-            setLevel(1);
-            setMovesLeft(20);
-            setGameState('playing');
-          }, 2000);
+          setTimeout(resetGame, 2000);
         }
         return newMoves;
       });
@@ -367,11 +455,25 @@ function App() {
     }
   };
 
+  if (gameState === 'menu') {
+    return (
+      <div className="App menu">
+        <h1 className="title">{gameTitle}</h1>
+        <button className="difficulty-btn" onClick={() => startGame('easy')}>Easy</button>
+        <button className="difficulty-btn" onClick={() => startGame('medium')}>Medium</button>
+        <button className="difficulty-btn" onClick={() => startGame('hard')}>Hard</button>
+        <div className="footer">
+          Built by <a href="https://x.com/Famdalorian" target="_blank" rel="noopener noreferrer">@Famdalorian</a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
-      <h1 className="title">Radbro Match</h1>
+      <h1 className="title">{gameTitle}</h1>
       <div className="score">Score: {score}</div>
-      <div className="level">Level: {level} | Moves Left: {movesLeft}</div>
+      <div className="level">Level: {level} | Moves: {movesLeft} | Time: {timeLeft}s</div>
       {gameState === 'won' && <div className="game-message">Level Up!</div>}
       {gameState === 'lost' && <div className="game-message">Game Over!</div>}
       <Grid
@@ -386,6 +488,9 @@ function App() {
         scorePopups={scorePopups}
         swappingTiles={swappingTiles}
       />
+       <div className="footer">
+        Built by <a href="https://x.com/Famdalorian" target="_blank" rel="noopener noreferrer">@Famdalorian</a>
+      </div>
     </div>
   );
 }
