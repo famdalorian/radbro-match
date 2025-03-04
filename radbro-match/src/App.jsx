@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Radmatch from './Components/Radmatch';
 import GameMenu from './Components/GameMenu';
-import Particles from 'react-particles';
-import { loadFull } from 'tsparticles'; // Using tsparticles v2
 import { AnimatePresence } from 'framer-motion';
 import { FaBars } from 'react-icons/fa';
 
@@ -39,52 +37,6 @@ function App() {
     setGameState('menu');
   };
 
-  // Particle initialization for tsparticles v2
-  const particlesInit = async (main) => {
-    await loadFull(main);
-  };
-
-  const particlesOptions = {
-    particles: {
-      number: {
-        value: 50,
-        density: {
-          enable: true,
-          value_area: 800,
-        },
-      },
-      color: {
-        value: ['#FF00FF', '#00FFFF', '#00FF00'],
-      },
-      shape: {
-        type: 'circle',
-      },
-      opacity: {
-        value: 0.5,
-        random: true,
-      },
-      size: {
-        value: 3,
-        random: true,
-      },
-      move: {
-        enable: true,
-        speed: 1,
-        direction: 'none',
-        random: true,
-        out_mode: 'out',
-      },
-    },
-    interactivity: {
-      events: {
-        onhover: {
-          enable: true,
-          mode: 'repulse',
-        },
-      },
-    },
-  };
-
   if (gameState !== 'menu') {
     return (
       <div className="App">
@@ -107,8 +59,7 @@ function App() {
 
   return (
     <div className="App home">
-      <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
-      <div className="hamburger-menu">
+      <div className={`hamburger-menu ${isMenuOpen ? 'hidden' : ''}`}>
         <FaBars className="menu-icon" onClick={() => setIsMenuOpen(true)} />
       </div>
       <AnimatePresence>
