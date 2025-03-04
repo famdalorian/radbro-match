@@ -46,7 +46,6 @@ const Grid = ({
   swappingTiles,
 }) => (
   <div className="grid">
-   
     {grid.map((row, rowIndex) =>
       row.map((image, colIndex) => {
         const swapInfo = swappingTiles.find(([r, c]) => r === rowIndex && c === colIndex);
@@ -202,6 +201,10 @@ function App() {
   const [grid, setGrid] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => {
+    const storedHighScore = localStorage.getItem('highScore');
+    return storedHighScore ? parseInt(storedHighScore, 10) : 0;
+  });
   const [touchStart, setTouchStart] = useState(null);
   const [matchedTiles, setMatchedTiles] = useState([]);
   const [droppingTiles, setDroppingTiles] = useState([]);
@@ -214,6 +217,7 @@ function App() {
   const [gameState, setGameState] = useState('menu');
   const [gameTitle, setGameTitle] = useState('Radbro Match');
   const [currentSounds, setCurrentSounds] = useState(sounds.default);
+  const [showFailModal, setShowFailModal] = useState(false);
 
   useEffect(() => {
     const unlockAudio = () => {
@@ -241,8 +245,12 @@ function App() {
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
+            setShowFailModal(true);
             setGameState('lost');
-            setTimeout(resetGame, 2000);
+            setTimeout(() => {
+              setShowFailModal(false);
+              setGameState('menu');
+            }, 2000);
             return 0;
           }
           return prev - 1;
@@ -251,6 +259,13 @@ function App() {
       return () => clearInterval(timer);
     }
   }, [gameState, timeLeft]);
+
+  const updateHighScore = (newScore) => {
+    if (newScore > highScore) {
+      setHighScore(newScore);
+      localStorage.setItem('highScore', newScore.toString());
+    }
+  };
 
   const startGame = (mode) => {
     setDifficulty(mode);
@@ -268,6 +283,7 @@ function App() {
 
   const resetGame = () => {
     const { moves, time } = difficulties[difficulty];
+    updateHighScore(score);
     setLevel(1);
     setScore(0);
     setMovesLeft(moves);
@@ -275,8 +291,7 @@ function App() {
     setGrid(createInitialGrid(tileSets[0]));
     setGameTitle('Radbro Match');
     setCurrentSounds(sounds.default);
-    setGameState('playing');
-    document.documentElement.className = `theme-0`;
+    setGameState('menu'); // Changed to go back to menu instead of playing
   };
 
   const clearAndRefill = async (currentGrid) => {
@@ -355,6 +370,7 @@ function App() {
 
     setScore((prev) => {
       const newScore = prev + totalPoints;
+      updateHighScore(newScore);
       const scoreGoal = difficulties[difficulty].scoreBase * level;
       if (newScore >= scoreGoal && movesLeft > 0 && timeLeft > 0) {
         setLevel((prevLevel) => {
@@ -392,21 +408,31 @@ function App() {
       setSwappingTiles([[prevRow, prevCol, direction], [row, col, direction]]);
       if (isAudioUnlocked) currentSounds.swap.play();
 
-      setMovesLeft((prev) => {
-        const newMoves = prev - 1;
-        if (newMoves <= 0) {
-          setGameState('lost');
-          setTimeout(resetGame, 2000);
-        }
-        return newMoves;
-      });
-
       setGrid((prevGrid) => {
-        const newGrid = prevGrid.map(row => [...row]);
-        [newGrid[prevRow][prevCol], newGrid[row][col]] = [newGrid[row][col], newGrid[prevRow][prevCol]];
-        setTimeout(() => setSwappingTiles([]), 300);
-        clearAndRefill(newGrid);
-        return newGrid;
+        const tempGrid = prevGrid.map(row => [...row]);
+        [tempGrid[prevRow][prevCol], tempGrid[row][col]] = [tempGrid[row][col], tempGrid[prevRow][prevCol]];
+        
+        const matches = checkMatches(tempGrid);
+        if (matches.length > 0) {
+          setMovesLeft((prev) => {
+            const newMoves = prev - 1;
+            if (newMoves <= 0) {
+              setShowFailModal(true);
+              setGameState('lost');
+              setTimeout(() => {
+                setShowFailModal(false);
+                setGameState('menu');
+              }, 2000);
+            }
+            return newMoves;
+          });
+          setTimeout(() => setSwappingTiles([]), 300);
+          clearAndRefill(tempGrid);
+          return tempGrid;
+        } else {
+          setTimeout(() => setSwappingTiles([]), 300);
+          return prevGrid;
+        }
       });
     }
     setSelectedTile(null);
@@ -459,6 +485,7 @@ function App() {
     return (
       <div className="App menu">
         <h1 className="title">{gameTitle}</h1>
+        <div className="high-score">High Score: {highScore}</div>
         <button className="difficulty-btn" onClick={() => startGame('easy')}>Easy</button>
         <button className="difficulty-btn" onClick={() => startGame('medium')}>Medium</button>
         <button className="difficulty-btn" onClick={() => startGame('hard')}>Hard</button>
@@ -472,10 +499,15 @@ function App() {
   return (
     <div className="App">
       <h1 className="title">{gameTitle}</h1>
+      <div className="high-score">High Score: {highScore}</div>
       <div className="score">Score: {score}</div>
       <div className="level">Level: {level} | Moves: {movesLeft} | Time: {timeLeft}s</div>
       {gameState === 'won' && <div className="game-message">Level Up!</div>}
-      {gameState === 'lost' && <div className="game-message">Game Over!</div>}
+      {gameState === 'lost' && showFailModal && (
+        <div className="fail-modal">
+          <div className="fail-modal-content">You Failed!</div>
+        </div>
+      )}
       <Grid
         grid={grid}
         handleTileClick={handleTileClick}
@@ -488,7 +520,7 @@ function App() {
         scorePopups={scorePopups}
         swappingTiles={swappingTiles}
       />
-       <div className="footer">
+      <div className="footer">
         Built by <a href="https://x.com/Famdalorian" target="_blank" rel="noopener noreferrer">@Famdalorian</a>
       </div>
     </div>
