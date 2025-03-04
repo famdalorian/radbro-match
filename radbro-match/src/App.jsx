@@ -72,10 +72,11 @@ const Grid = ({
   </div>
 );
 
-// Utility Functions (Defined Before Use)
+// Utility Functions
 const checkMatches = (grid) => {
   const matches = [];
-  // Horizontal
+
+  // Horizontal Matches (3+)
   for (let i = 0; i < 6; i++) {
     let count = 1;
     let startCol = 0;
@@ -90,7 +91,8 @@ const checkMatches = (grid) => {
     }
     if (count >= 3) matches.push({ row: i, cols: Array.from({ length: count }, (_, k) => startCol + k) });
   }
-  // Vertical
+
+  // Vertical Matches (3+)
   for (let j = 0; j < 6; j++) {
     let count = 1;
     let startRow = 0;
@@ -105,6 +107,25 @@ const checkMatches = (grid) => {
     }
     if (count >= 3) matches.push({ col: j, rows: Array.from({ length: count }, (_, k) => startRow + k) });
   }
+
+  // 2x2 Square Matches
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      const topLeft = grid[i][j];
+      if (
+        topLeft &&
+        topLeft === grid[i][j + 1] &&
+        topLeft === grid[i + 1][j] &&
+        topLeft === grid[i + 1][j + 1]
+      ) {
+        matches.push({
+          square: true,
+          positions: [[i, j], [i, j + 1], [i + 1, j], [i + 1, j + 1]],
+        });
+      }
+    }
+  }
+
   return matches;
 };
 
@@ -113,10 +134,15 @@ const createInitialGrid = (images) => {
   let matches = checkMatches(grid);
   while (matches.length > 0) {
     matches.forEach((match) => {
-      const pos = match.row !== undefined
-        ? [match.row, match.cols[Math.floor(Math.random() * match.cols.length)]]
-        : [match.rows[Math.floor(Math.random() * match.rows.length)], match.col];
-      grid[pos[0]][pos[1]] = images[Math.floor(Math.random() * images.length)];
+      if (match.square) {
+        const [row, col] = match.positions[Math.floor(Math.random() * 4)];
+        grid[row][col] = images[Math.floor(Math.random() * images.length)];
+      } else {
+        const pos = match.row !== undefined
+          ? [match.row, match.cols[Math.floor(Math.random() * match.cols.length)]]
+          : [match.rows[Math.floor(Math.random() * match.rows.length)], match.col];
+        grid[pos[0]][pos[1]] = images[Math.floor(Math.random() * images.length)];
+      }
     });
     matches = checkMatches(grid);
   }
@@ -148,6 +174,9 @@ function App() {
   const [scorePopups, setScorePopups] = useState([]);
   const [swappingTiles, setSwappingTiles] = useState([]);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+  const [level, setLevel] = useState(1);
+  const [movesLeft, setMovesLeft] = useState(20);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
 
   useEffect(() => {
     const unlockAudio = () => {
@@ -179,7 +208,13 @@ function App() {
       let points = 0;
       let matchedPositions = [];
       matches.forEach((match) => {
-        if (match.row !== undefined) {
+        if (match.square) {
+          match.positions.forEach(([row, col]) => {
+            matchedPositions.push([row, col]);
+            newGrid[row][col] = null;
+          });
+          points += 50; // Bonus for 2x2 square
+        } else if (match.row !== undefined) {
           match.cols.forEach((col) => {
             matchedPositions.push([match.row, col]);
             newGrid[match.row][col] = null;
@@ -234,12 +269,25 @@ function App() {
       setDroppingTiles([]);
     }
 
-    setScore((prev) => prev + totalPoints);
+    setScore((prev) => {
+      const newScore = prev + totalPoints;
+      const scoreGoal = level * 500; // e.g., 500, 1000, 1500 per level
+      if (newScore >= scoreGoal && movesLeft > 0) {
+        setLevel((prevLevel) => prevLevel + 1);
+        setMovesLeft(20);
+        setGameState('won');
+        setTimeout(() => {
+          setGrid(createInitialGrid(nftImages));
+          setGameState('playing');
+        }, 2000);
+      }
+      return newScore;
+    });
     setGrid(newGrid);
   };
 
   const attemptSwap = (row, col) => {
-    if (!selectedTile) return;
+    if (!selectedTile || gameState !== 'playing') return;
     const { row: prevRow, col: prevCol } = selectedTile;
     const isAdjacent =
       (Math.abs(prevRow - row) === 1 && prevCol === col) ||
@@ -249,6 +297,21 @@ function App() {
       const direction = prevRow !== row ? 'vertical' : 'horizontal';
       setSwappingTiles([[prevRow, prevCol, direction], [row, col, direction]]);
       if (isAudioUnlocked) sounds.swap.play();
+
+      setMovesLeft((prev) => {
+        const newMoves = prev - 1;
+        if (newMoves <= 0) {
+          setGameState('lost');
+          setTimeout(() => {
+            setGrid(createInitialGrid(nftImages));
+            setScore(0);
+            setLevel(1);
+            setMovesLeft(20);
+            setGameState('playing');
+          }, 2000);
+        }
+        return newMoves;
+      });
 
       setGrid((prevGrid) => {
         const newGrid = prevGrid.map(row => [...row]);
@@ -308,6 +371,9 @@ function App() {
     <div className="App">
       <h1 className="title">Radbro Match</h1>
       <div className="score">Score: {score}</div>
+      <div className="level">Level: {level} | Moves Left: {movesLeft}</div>
+      {gameState === 'won' && <div className="game-message">Level Up!</div>}
+      {gameState === 'lost' && <div className="game-message">Game Over!</div>}
       <Grid
         grid={grid}
         handleTileClick={handleTileClick}

@@ -157,6 +157,34 @@ body {
   box-shadow: 0 0 10px #FFFF00;
 }
 
+.level {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+  color: #FF00FF;
+  text-shadow: 0 0 5px #FF00FF, 0 0 10px #00FFFF;
+  background: #000;
+  padding: clamp(0.25rem, 1vw, 0.5rem) clamp(0.5rem, 2vw, 1rem);
+  border: 3px solid #00FF00;
+  border-radius: 5px;
+  display: inline-block;
+  margin: clamp(0.25rem, 1vw, 0.5rem) 0;
+  box-shadow: 0 0 10px #00FF00;
+}
+
+.game-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  color: #FFFF00;
+  text-shadow: 0 0 5px #FF00FF, 0 0 10px #00FFFF, 0 0 15px #00FF00;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  z-index: 10;
+  animation: flicker 1.5s infinite alternate;
+}
+
 .score-popup {
   position: absolute;
   color: #FFFF00;
