@@ -1,0 +1,122 @@
+/* Import root variables from App.css to reuse neon colors and shadows */
+@import url('../../App.css');
+
+.hamburger-menu {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+}
+
+.menu-icon,
+.close-icon {
+  color: var(--title-color);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.menu-icon:hover,
+.close-icon:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 10px var(--title-color);
+}
+
+.game-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.1); /* Glassmorphism effect */
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 999;
+  padding: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.menu-header h2 {
+  color: var(--title-color);
+  text-shadow: var(--title-shadow);
+  font-size: 1.5rem;
+}
+
+.game-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.game-item {
+  color: var(--score-color);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-item:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px var(--score-color);
+}
+
+.difficulty-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.difficulty-options button {
+  background: var(--score-bg);
+  color: var(--score-color);
+  border: var(--score-border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.difficulty-options button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px var(--score-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .game-menu {
+    width: 200px;
+  }
+}
+
+@media (max-width: 400px) {
+  .game-menu {
+    width: 150px;
+  }
+
+  .menu-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .game-item {
+    padding: 0.75rem;
+  }
+
+  .difficulty-options button {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+}
