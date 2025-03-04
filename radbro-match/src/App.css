@@ -9,7 +9,7 @@
   gap: 4px;
   background-color: #333;
   padding: 10px;
-  perspective: 1000px; /* Adds 3D depth */
+  perspective: 1000px;
 }
 
 .tile {
@@ -43,4 +43,13 @@
   height: 100%;
   object-fit: cover;
   border-radius: 5px;
+}.score {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #fff;
+  background-color: #444;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
 }
