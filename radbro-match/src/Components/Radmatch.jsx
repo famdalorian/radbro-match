@@ -32,6 +32,7 @@ const Tile = ({
       {powerUp === 'striped-horizontal' && <div className="striped-overlay horizontal" />}
       {powerUp === 'striped-vertical' && <div className="striped-overlay vertical" />}
       {powerUp === 'bomb' && <div className="bomb-overlay" />}
+      {powerUp === 'wild' && <div className="wild-overlay" />}
     </div>
   </div>
 );
@@ -96,7 +97,12 @@ const checkMatches = (grid) => {
     let count = 1;
     let startCol = 0;
     for (let j = 1; j < 6; j++) {
-      if (grid[i][j]?.image && grid[i][j]?.image === grid[i][j - 1]?.image) {
+      const currentTile = grid[i][j];
+      const prevTile = grid[i][j - 1];
+      if (
+        currentTile?.image && prevTile?.image &&
+        (currentTile.image === prevTile.image || currentTile.powerUp === 'wild' || prevTile.powerUp === 'wild')
+      ) {
         count++;
       } else {
         if (count >= 3) {
@@ -104,8 +110,10 @@ const checkMatches = (grid) => {
           matches.push({ row: i, cols });
           if (count >= 5) {
             powerUps.push({ type: 'bomb', row: i, col: cols[Math.floor(cols.length / 2)] });
+            console.log(`Bomb created at [${i}, ${cols[Math.floor(cols.length / 2)]}] from 5+ horizontal match`);
           } else if (count === 4) {
             powerUps.push({ type: 'striped-horizontal', row: i, col: cols[Math.floor(cols.length / 2)] });
+            console.log(`Striped-horizontal created at [${i}, ${cols[Math.floor(cols.length / 2)]}]`);
           }
         }
         count = 1;
@@ -117,8 +125,10 @@ const checkMatches = (grid) => {
       matches.push({ row: i, cols });
       if (count >= 5) {
         powerUps.push({ type: 'bomb', row: i, col: cols[Math.floor(cols.length / 2)] });
+        console.log(`Bomb created at [${i}, ${cols[Math.floor(cols.length / 2)]}] from 5+ horizontal match`);
       } else if (count === 4) {
         powerUps.push({ type: 'striped-horizontal', row: i, col: cols[Math.floor(cols.length / 2)] });
+        console.log(`Striped-horizontal created at [${i}, ${cols[Math.floor(cols.length / 2)]}]`);
       }
     }
   }
@@ -128,7 +138,12 @@ const checkMatches = (grid) => {
     let count = 1;
     let startRow = 0;
     for (let i = 1; i < 6; i++) {
-      if (grid[i][j]?.image && grid[i][j]?.image === grid[i - 1][j]?.image) {
+      const currentTile = grid[i][j];
+      const prevTile = grid[i - 1][j];
+      if (
+        currentTile?.image && prevTile?.image &&
+        (currentTile.image === prevTile.image || currentTile.powerUp === 'wild' || prevTile.powerUp === 'wild')
+      ) {
         count++;
       } else {
         if (count >= 3) {
@@ -136,8 +151,10 @@ const checkMatches = (grid) => {
           matches.push({ col: j, rows });
           if (count >= 5) {
             powerUps.push({ type: 'bomb', row: rows[Math.floor(rows.length / 2)], col: j });
+            console.log(`Bomb created at [${rows[Math.floor(rows.length / 2)]}, ${j}] from 5+ vertical match`);
           } else if (count === 4) {
             powerUps.push({ type: 'striped-vertical', row: rows[Math.floor(rows.length / 2)], col: j });
+            console.log(`Striped-vertical created at [${rows[Math.floor(rows.length / 2)]}, ${j}]`);
           }
         }
         count = 1;
@@ -149,8 +166,10 @@ const checkMatches = (grid) => {
       matches.push({ col: j, rows });
       if (count >= 5) {
         powerUps.push({ type: 'bomb', row: rows[Math.floor(rows.length / 2)], col: j });
+        console.log(`Bomb created at [${rows[Math.floor(rows.length / 2)]}, ${j}] from 5+ vertical match`);
       } else if (count === 4) {
         powerUps.push({ type: 'striped-vertical', row: rows[Math.floor(rows.length / 2)], col: j });
+        console.log(`Striped-vertical created at [${rows[Math.floor(rows.length / 2)]}, ${j}]`);
       }
     }
   }
@@ -172,6 +191,7 @@ const checkMatches = (grid) => {
           powerUpTile: [i, j + 2],
           powerUpType: 'striped-horizontal'
         });
+        console.log(`Striped-horizontal created at [${i}, ${j + 2}] from L shape`);
       }
 
       // T shape: 3 horizontal + 3 vertical down from middle
@@ -185,6 +205,7 @@ const checkMatches = (grid) => {
           powerUpTile: [i, j + 1],
           powerUpType: 'bomb'
         });
+        console.log(`Bomb created at [${i}, ${j + 1}] from T shape`);
       }
     }
   }
@@ -235,6 +256,9 @@ function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => 
       'https://i.seadn.io/s/raw/files/f6508b27dd3f3d0cc38eae4e12164152.png?auto=format&dpr=1&w=3840',
     ],
   ];
+
+  const bombTileImage = 'https://i.seadn.io/gae/BmwIAqO5ccTfg1aiozNC71h_GkFrBr3JqsfDbLMTY7idylJkBX3_gXjQ057cyJ4HIEISAaAi10XgUJMowjF5jaxXhb4IfarcwiNf5lk?auto=format&dpr=1&w=3840';
+  const wildTileImage = 'https://i.seadn.io/s/raw/files/9710f595aaf70d8b970b72e250a653bf.png?auto=format&dpr=1&w=3840'; // Example wild tile; replace if desired
 
   const difficulties = {
     easy: { moves: 25, time: 60, scoreBase: 300 },
@@ -382,25 +406,35 @@ function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => 
       powerUpActivations.forEach(({ type, row, col }) => {
         let affectedTiles = [];
         if (type === 'striped-horizontal') {
+          console.log(`Activating striped-horizontal at [${row}, ${col}]`);
           for (let c = 0; c < 6; c++) {
             affectedTiles.push([row, c]);
             setTileAnimations(prev => ({ ...prev, [`${row}-${c}`]: 'activate-striped' }));
           }
           activationPoints += affectedTiles.length * 30;
         } else if (type === 'striped-vertical') {
+          console.log(`Activating striped-vertical at [${row}, ${col}]`);
           for (let r = 0; r < 6; r++) {
             affectedTiles.push([r, col]);
             setTileAnimations(prev => ({ ...prev, [`${r}-${col}`]: 'activate-striped' }));
           }
           activationPoints += affectedTiles.length * 30;
         } else if (type === 'bomb') {
+          console.log(`Activating bomb at [${row}, ${col}]`);
           for (let r = Math.max(0, row - 1); r <= Math.min(5, row + 1); r++) {
             for (let c = Math.max(0, col - 1); c <= Math.min(5, col + 1); c++) {
               affectedTiles.push([r, c]);
               setTileAnimations(prev => ({ ...prev, [`${r}-${c}`]: 'activate-bomb' }));
+              // Replace with wild tile after explosion, but keep bomb tile visible initially
+              if (newGrid[r][c] && ![row, col].join(',') === `${r},${c}`) {
+                newGrid[r][c] = { image: wildTileImage, powerUp: 'wild' };
+              }
             }
           }
           activationPoints += affectedTiles.length * 50;
+        } else if (type === 'wild') {
+          console.log(`Wild tile matched at [${row}, ${col}]`);
+          activationPoints += 20; // Bonus for wild tile match
         }
         affectedTiles.forEach(pos => matchedPositions.add(pos.join(',')));
       });
@@ -409,8 +443,11 @@ function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => 
       powerUpCreations.forEach(({ type, row, col }) => {
         if (type === 'striped-horizontal' || type === 'striped-vertical') {
           creationPoints += 100;
+          newGrid[row][col].powerUp = type; // Ensure power-up is assigned
         } else if (type === 'bomb') {
           creationPoints += 200;
+          newGrid[row][col] = { image: bombTileImage, powerUp: 'bomb' }; // Use bomb image
+          console.log(`Bomb tile set at [${row}, ${col}] with image`);
         }
         setTileAnimations(prev => ({ ...prev, [`${row}-${col}`]: 'create-power-up' }));
         setTimeout(() => {
@@ -424,12 +461,8 @@ function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => 
 
       const matchedArray = Array.from(matchedPositions).map(pos => pos.split(',').map(Number));
       matchedArray.forEach(([row, col]) => {
-        newGrid[row][col] = null;
-      });
-
-      powerUpCreations.forEach(({ type, row, col }) => {
-        if (newGrid[row][col]) {
-          newGrid[row][col].powerUp = type;
+        if (newGrid[row][col] && newGrid[row][col].powerUp !== 'wild' && newGrid[row][col].powerUp !== 'bomb') {
+          newGrid[row][col] = null;
         }
       });
 
@@ -489,6 +522,7 @@ function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => 
       return newScore;
     });
     setGrid(newGrid);
+    console.log('Current grid state:', newGrid);
   };
 
   const attemptSwap = (row, col) => {

@@ -51,10 +51,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   width: 100vw;
   box-sizing: border-box;
-  animation: pulseBackground 8s ease-in-out infinite; /* Slower pulsing animation */
+  animation: pulseBackground 8s ease-in-out infinite;
 }
 
 /* Slower pulsing animation for the gradient background */
@@ -63,7 +62,7 @@ body {
     filter: brightness(1);
   }
   50% {
-    filter: brightness(1.2); /* Slightly reduced brightness change for subtlety */
+    filter: brightness(1.2);
   }
   100% {
     filter: brightness(1);
@@ -87,6 +86,72 @@ body {
 @keyframes static {
   0% { background-position: 0 0; }
   100% { background-position: 5px 5px; }
+}
+
+/* Header styles */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for visibility */
+}
+
+/* Hamburger menu */
+.hamburger-menu {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.hamburger-menu.hidden {
+  visibility: hidden;
+}
+
+/* User area styles */
+.user-area {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 1001; /* Slightly higher than header to ensure visibility */
+}
+
+.wallet-icon {
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.wallet-icon:hover {
+  color: #512da8; /* Phantom purple */
+}
+
+.wallet-address {
+  color: #fff;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+}
+
+/* Content padding to avoid header overlap */
+.home-content,
+.game-content {
+  padding-top: 60px; /* Increased to account for header height */
 }
 
 /* Hero Section */
@@ -478,6 +543,15 @@ body {
 
 .power-up-bomb .tile-inner {
   position: relative;
+  background: #FF4500;
+}
+
+.power-up-bomb .nft-image {
+  opacity: 0.9;
+}
+
+.power-up-wild .tile-inner {
+  position: relative;
 }
 
 .striped-overlay {
@@ -514,13 +588,24 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle, rgba(255, 215, 0, 0.7), transparent);
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(255, 0, 0, 0.7), transparent);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
   animation: pulseBomb 1s ease-in-out infinite;
+}
+
+.wild-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5), transparent 70%);
+  pointer-events: none;
+  animation: pulseWild 1.5s ease-in-out infinite;
 }
 
 /* Animations */
@@ -576,6 +661,12 @@ body {
   0% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-50%, -50%) scale(1.2); }
   100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes pulseWild {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
 }
 
 /* Power-up animations */
@@ -652,6 +743,7 @@ body {
   }
   .title { line-height: 1.1; }
   .score { padding: 0.25rem 0.5rem; }
+  .wallet-address { font-size: 12px; }
 }
 
 @media (min-width: 1200px) {
