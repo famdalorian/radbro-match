@@ -4,6 +4,7 @@ import '../App.css';
 // Tile Component
 const Tile = ({
   image,
+  powerUp,
   onClick,
   onTouchStart,
   onTouchMove,
@@ -13,17 +14,25 @@ const Tile = ({
   isDropping,
   isSwapping,
   swapDirection,
+  animation,
 }) => (
   <div
     className={`tile ${isSelected ? 'selected' : ''} ${isMatched ? 'matched' : ''} ${
       isDropping ? 'dropping' : ''
-    } ${isSwapping ? `swapping-${swapDirection}` : ''}`}
+    } ${isSwapping ? `swapping-${swapDirection}` : ''} ${
+      powerUp ? `power-up-${powerUp}` : ''
+    } ${animation ? `animating-${animation}` : ''}`}
     onClick={onClick}
     onTouchStart={onTouchStart}
     onTouchMove={onTouchMove}
     onTouchEnd={onTouchEnd}
   >
-    <div className="tile-inner">{image && <img src={image} alt="NFT Tile" className="nft-image" />}</div>
+    <div className="tile-inner">
+      {image && <img src={image} alt="NFT Tile" className="nft-image" />}
+      {powerUp === 'striped-horizontal' && <div className="striped-overlay horizontal" />}
+      {powerUp === 'striped-vertical' && <div className="striped-overlay vertical" />}
+      {powerUp === 'bomb' && <div className="bomb-overlay" />}
+    </div>
   </div>
 );
 
@@ -46,15 +55,17 @@ const Grid = ({
   droppingTiles,
   scorePopups,
   swappingTiles,
+  tileAnimations,
 }) => (
   <div className="grid">
-    {grid.map((row, rowIndex) =>
-      row.map((image, colIndex) => {
+    {grid && grid.map((row, rowIndex) =>
+      row.map((tile, colIndex) => {
         const swapInfo = swappingTiles.find(([r, c]) => r === rowIndex && c === colIndex);
         return (
           <Tile
             key={`${rowIndex}-${colIndex}`}
-            image={image}
+            image={tile?.image}
+            powerUp={tile?.powerUp}
             onClick={() => handleTileClick(rowIndex, colIndex)}
             onTouchStart={(e) => handleTouchStart(e, rowIndex, colIndex)}
             onTouchMove={handleTouchMove}
@@ -64,6 +75,7 @@ const Grid = ({
             isDropping={droppingTiles.some(([r, c]) => r === rowIndex && c === colIndex)}
             isSwapping={!!swapInfo}
             swapDirection={swapInfo?.[2]}
+            animation={tileAnimations[`${rowIndex}-${colIndex}`]}
           />
         );
       })
@@ -77,77 +89,129 @@ const Grid = ({
 // Utility Functions
 const checkMatches = (grid) => {
   const matches = [];
+  const powerUps = [];
+
+  // Horizontal matches
   for (let i = 0; i < 6; i++) {
     let count = 1;
     let startCol = 0;
     for (let j = 1; j < 6; j++) {
-      if (grid[i][j] && grid[i][j] === grid[i][j - 1]) {
+      if (grid[i][j]?.image && grid[i][j]?.image === grid[i][j - 1]?.image) {
         count++;
       } else {
-        if (count >= 3) matches.push({ row: i, cols: Array.from({ length: count }, (_, k) => startCol + k) });
+        if (count >= 3) {
+          const cols = Array.from({ length: count }, (_, k) => startCol + k);
+          matches.push({ row: i, cols });
+          if (count >= 5) {
+            powerUps.push({ type: 'bomb', row: i, col: cols[Math.floor(cols.length / 2)] });
+          } else if (count === 4) {
+            powerUps.push({ type: 'striped-horizontal', row: i, col: cols[Math.floor(cols.length / 2)] });
+          }
+        }
         count = 1;
         startCol = j;
       }
     }
-    if (count >= 3) matches.push({ row: i, cols: Array.from({ length: count }, (_, k) => startCol + k) });
+    if (count >= 3) {
+      const cols = Array.from({ length: count }, (_, k) => startCol + k);
+      matches.push({ row: i, cols });
+      if (count >= 5) {
+        powerUps.push({ type: 'bomb', row: i, col: cols[Math.floor(cols.length / 2)] });
+      } else if (count === 4) {
+        powerUps.push({ type: 'striped-horizontal', row: i, col: cols[Math.floor(cols.length / 2)] });
+      }
+    }
   }
+
+  // Vertical matches
   for (let j = 0; j < 6; j++) {
     let count = 1;
     let startRow = 0;
     for (let i = 1; i < 6; i++) {
-      if (grid[i][j] && grid[i][j] === grid[i - 1][j]) {
+      if (grid[i][j]?.image && grid[i][j]?.image === grid[i - 1][j]?.image) {
         count++;
       } else {
-        if (count >= 3) matches.push({ col: j, rows: Array.from({ length: count }, (_, k) => startRow + k) });
+        if (count >= 3) {
+          const rows = Array.from({ length: count }, (_, k) => startRow + k);
+          matches.push({ col: j, rows });
+          if (count >= 5) {
+            powerUps.push({ type: 'bomb', row: rows[Math.floor(rows.length / 2)], col: j });
+          } else if (count === 4) {
+            powerUps.push({ type: 'striped-vertical', row: rows[Math.floor(rows.length / 2)], col: j });
+          }
+        }
         count = 1;
         startRow = i;
       }
     }
-    if (count >= 3) matches.push({ col: j, rows: Array.from({ length: count }, (_, k) => startRow + k) });
+    if (count >= 3) {
+      const rows = Array.from({ length: count }, (_, k) => startRow + k);
+      matches.push({ col: j, rows });
+      if (count >= 5) {
+        powerUps.push({ type: 'bomb', row: rows[Math.floor(rows.length / 2)], col: j });
+      } else if (count === 4) {
+        powerUps.push({ type: 'striped-vertical', row: rows[Math.floor(rows.length / 2)], col: j });
+      }
+    }
   }
-  for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 5; j++) {
-      const topLeft = grid[i][j];
+
+  // L and T shape detection
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      const tile = grid[i][j]?.image;
+      if (!tile) continue;
+
+      // L shape: 3 horizontal + 3 vertical down from right end
       if (
-        topLeft &&
-        topLeft === grid[i][j + 1] &&
-        topLeft === grid[i + 1][j] &&
-        topLeft === grid[i + 1][j + 1]
+        j + 2 < 6 && i + 2 < 6 &&
+        tile === grid[i][j + 1]?.image && tile === grid[i][j + 2]?.image &&
+        tile === grid[i + 1][j + 2]?.image && tile === grid[i + 2][j + 2]?.image
       ) {
         matches.push({
-          square: true,
-          positions: [[i, j], [i, j + 1], [i + 1, j], [i + 1, j + 1]],
+          positions: [[i, j], [i, j + 1], [i, j + 2], [i + 1, j + 2], [i + 2, j + 2]],
+          powerUpTile: [i, j + 2],
+          powerUpType: 'striped-horizontal'
+        });
+      }
+
+      // T shape: 3 horizontal + 3 vertical down from middle
+      if (
+        j + 2 < 6 && i + 2 < 6 &&
+        tile === grid[i][j + 1]?.image && tile === grid[i][j + 2]?.image &&
+        tile === grid[i + 1][j + 1]?.image && tile === grid[i + 2][j + 1]?.image
+      ) {
+        matches.push({
+          positions: [[i, j], [i, j + 1], [i, j + 2], [i + 1, j + 1], [i + 2, j + 1]],
+          powerUpTile: [i, j + 1],
+          powerUpType: 'bomb'
         });
       }
     }
   }
-  return matches;
+
+  return { matches, powerUps };
 };
 
 const createInitialGrid = (images) => {
   let grid = Array(6)
     .fill()
-    .map(() => Array(6).fill().map(() => images[Math.floor(Math.random() * images.length)]));
-  let matches = checkMatches(grid);
+    .map(() => Array(6).fill().map(() => ({ image: images[Math.floor(Math.random() * images.length)] })));
+  let { matches } = checkMatches(grid);
   while (matches.length > 0) {
     matches.forEach((match) => {
-      if (match.square) {
-        const [row, col] = match.positions[Math.floor(Math.random() * 4)];
-        grid[row][col] = images[Math.floor(Math.random() * images.length)];
-      } else {
-        const pos =
-          match.row !== undefined
-            ? [match.row, match.cols[Math.floor(Math.random() * match.cols.length)]]
-            : [match.rows[Math.floor(Math.random() * match.rows.length)], match.col];
-        grid[pos[0]][pos[1]] = images[Math.floor(Math.random() * images.length)];
-      }
+      const pos = match.positions
+        ? match.positions[Math.floor(Math.random() * match.positions.length)]
+        : match.row !== undefined
+        ? [match.row, match.cols[Math.floor(Math.random() * match.cols.length)]]
+        : [match.rows[Math.floor(Math.random() * match.rows.length)], match.col];
+      grid[pos[0]][pos[1]] = { image: images[Math.floor(Math.random() * images.length)] };
     });
-    matches = checkMatches(grid);
+    matches = checkMatches(grid).matches;
   }
   return grid;
 };
 
-function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
+function Radmatch({ difficulty = 'easy', highScore = 0, updateHighScore = () => {}, onGameOver = () => {} }) {
   const tileSets = [
     [
       'https://i.seadn.io/s/raw/files/1b3db129c621b308b6ca77c761010562.png?auto=format&dpr=1&w=2048',
@@ -196,13 +260,15 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
     },
   };
 
+  const validDifficulty = difficulties[difficulty] ? difficulty : 'easy';
+
   const [grid, setGrid] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
-  const [touchStart, setTouchStart] = useState(null); // Added for touch tracking
+  const [touchStart, setTouchStart] = useState(null);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
-  const [movesLeft, setMovesLeft] = useState(difficulties[difficulty].moves);
-  const [timeLeft, setTimeLeft] = useState(difficulties[difficulty].time);
+  const [movesLeft, setMovesLeft] = useState(difficulties[validDifficulty].moves);
+  const [timeLeft, setTimeLeft] = useState(difficulties[validDifficulty].time);
   const [matchedTiles, setMatchedTiles] = useState([]);
   const [droppingTiles, setDroppingTiles] = useState([]);
   const [scorePopups, setScorePopups] = useState([]);
@@ -211,6 +277,7 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
   const [currentSounds, setCurrentSounds] = useState(sounds.default);
   const [showFailModal, setShowFailModal] = useState(false);
   const [gameTitle, setGameTitle] = useState('Radbro Match');
+  const [tileAnimations, setTileAnimations] = useState({});
 
   useEffect(() => {
     const tileSetIndex = Math.floor((level - 1) / 3) % tileSets.length;
@@ -269,49 +336,111 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
   }, []);
 
   const clearAndRefill = async (currentGrid) => {
-    let newGrid = [...currentGrid.map((row) => [...row])];
+    let newGrid = currentGrid.map(row => row.map(tile => ({ ...tile })));
     let totalPoints = 0;
     let allMatchedPositions = [];
 
     const processMatches = () => {
-      const matches = checkMatches(newGrid);
+      const { matches, powerUps: legacyPowerUps } = checkMatches(newGrid);
       if (matches.length === 0) return false;
 
-      let points = 0;
-      let matchedPositions = [];
+      let matchedPositions = new Set();
+      let powerUpCreations = [];
+      let activationPoints = 0;
+
       matches.forEach((match) => {
-        if (match.square) {
-          match.positions.forEach(([row, col]) => {
-            matchedPositions.push([row, col]);
-            newGrid[row][col] = null;
-          });
-          points += 50;
-        } else if (match.row !== undefined) {
-          match.cols.forEach((col) => {
-            matchedPositions.push([match.row, col]);
-            newGrid[match.row][col] = null;
-            points += 10;
-          });
-          if (match.cols.length === 4) points += 20;
-          if (match.cols.length >= 5) points += 50;
-        } else {
-          match.rows.forEach((row) => {
-            matchedPositions.push([row, match.col]);
-            newGrid[row][match.col] = null;
-            points += 10;
-          });
-          if (match.rows.length === 4) points += 20;
-          if (match.rows.length >= 5) points += 50;
+        let positions = [];
+        if (match.row !== undefined) {
+          positions = match.cols.map(col => [match.row, col]);
+        } else if (match.col !== undefined) {
+          positions = match.rows.map(row => [row, match.col]);
+        } else if (match.positions) {
+          positions = match.positions;
+        }
+
+        if (match.powerUpTile) {
+          positions = positions.filter(([r, c]) => r !== match.powerUpTile[0] || c !== match.powerUpTile[1]);
+          powerUpCreations.push({ type: match.powerUpType, row: match.powerUpTile[0], col: match.powerUpTile[1] });
+        }
+
+        positions.forEach(pos => matchedPositions.add(pos.join(',')));
+      });
+
+      let baseMatchPoints = 0;
+      const powerUpActivations = [];
+      matchedPositions.forEach(pos => {
+        const [row, col] = pos.split(',').map(Number);
+        const tile = newGrid[row][col];
+        if (tile) {
+          baseMatchPoints += 10;
+          if (tile.powerUp) {
+            powerUpActivations.push({ type: tile.powerUp, row, col });
+          }
         }
       });
 
+      powerUpActivations.forEach(({ type, row, col }) => {
+        let affectedTiles = [];
+        if (type === 'striped-horizontal') {
+          for (let c = 0; c < 6; c++) {
+            affectedTiles.push([row, c]);
+            setTileAnimations(prev => ({ ...prev, [`${row}-${c}`]: 'activate-striped' }));
+          }
+          activationPoints += affectedTiles.length * 30;
+        } else if (type === 'striped-vertical') {
+          for (let r = 0; r < 6; r++) {
+            affectedTiles.push([r, col]);
+            setTileAnimations(prev => ({ ...prev, [`${r}-${col}`]: 'activate-striped' }));
+          }
+          activationPoints += affectedTiles.length * 30;
+        } else if (type === 'bomb') {
+          for (let r = Math.max(0, row - 1); r <= Math.min(5, row + 1); r++) {
+            for (let c = Math.max(0, col - 1); c <= Math.min(5, col + 1); c++) {
+              affectedTiles.push([r, c]);
+              setTileAnimations(prev => ({ ...prev, [`${r}-${c}`]: 'activate-bomb' }));
+            }
+          }
+          activationPoints += affectedTiles.length * 50;
+        }
+        affectedTiles.forEach(pos => matchedPositions.add(pos.join(',')));
+      });
+
+      let creationPoints = 0;
+      powerUpCreations.forEach(({ type, row, col }) => {
+        if (type === 'striped-horizontal' || type === 'striped-vertical') {
+          creationPoints += 100;
+        } else if (type === 'bomb') {
+          creationPoints += 200;
+        }
+        setTileAnimations(prev => ({ ...prev, [`${row}-${col}`]: 'create-power-up' }));
+        setTimeout(() => {
+          setTileAnimations(prev => {
+            const newAnimations = { ...prev };
+            delete newAnimations[`${row}-${col}`];
+            return newAnimations;
+          });
+        }, 500);
+      });
+
+      const matchedArray = Array.from(matchedPositions).map(pos => pos.split(',').map(Number));
+      matchedArray.forEach(([row, col]) => {
+        newGrid[row][col] = null;
+      });
+
+      powerUpCreations.forEach(({ type, row, col }) => {
+        if (newGrid[row][col]) {
+          newGrid[row][col].powerUp = type;
+        }
+      });
+
+      const points = baseMatchPoints + creationPoints + activationPoints;
       totalPoints += points;
-      allMatchedPositions = [...allMatchedPositions, ...matchedPositions];
-      setMatchedTiles(matchedPositions);
+      allMatchedPositions = [...allMatchedPositions, ...matchedArray];
+      setMatchedTiles(matchedArray);
       if (isAudioUnlocked) currentSounds.match.play();
 
-      if (matchedPositions.length > 0) {
-        const [row, col] = matchedPositions[Math.floor(matchedPositions.length / 2)];
+      if (matchedArray.length > 0) {
+        const [row, col] = matchedArray[Math.floor(matchedArray.length / 2)];
         const x = col * 84 + 42;
         const y = row * 84 + 42;
         setScorePopups((prev) => [...prev, { points, x, y }]);
@@ -323,13 +452,14 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
     while (processMatches()) {
       await new Promise((resolve) => setTimeout(resolve, 400));
       setMatchedTiles([]);
+      setTileAnimations({});
 
       let droppingPositions = [];
       const currentTileSet = tileSets[Math.floor((level - 1) / 3) % tileSets.length];
       for (let col = 0; col < 6; col++) {
         let column = newGrid.map((row) => row[col]).filter(Boolean);
         while (column.length < 6) {
-          column.unshift(currentTileSet[Math.floor(Math.random() * currentTileSet.length)]);
+          column.unshift({ image: currentTileSet[Math.floor(Math.random() * currentTileSet.length)] });
           droppingPositions.push([6 - column.length, col]);
         }
         for (let row = 0; row < 6; row++) {
@@ -345,13 +475,13 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
     setScore((prev) => {
       const newScore = prev + totalPoints;
       updateHighScore(newScore);
-      const scoreGoal = difficulties[difficulty].scoreBase * level;
+      const scoreGoal = difficulties[validDifficulty].scoreBase * level;
       if (newScore >= scoreGoal && movesLeft > 0 && timeLeft > 0) {
         setLevel((prevLevel) => {
           const newLevel = prevLevel + 1;
           const tileSetIndex = Math.floor((newLevel - 1) / 3) % tileSets.length;
-          setMovesLeft(difficulties[difficulty].moves - Math.floor((newLevel - 1) / 3) * 2);
-          setTimeLeft(difficulties[difficulty].time - Math.floor((newLevel - 1) / 3) * 5);
+          setMovesLeft(difficulties[validDifficulty].moves - Math.floor((newLevel - 1) / 3) * 2);
+          setTimeLeft(difficulties[validDifficulty].time - Math.floor((newLevel - 1) / 3) * 5);
           setGrid(createInitialGrid(tileSets[tileSetIndex]));
           return newLevel;
         });
@@ -377,7 +507,7 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
         const tempGrid = prevGrid.map((row) => [...row]);
         [tempGrid[prevRow][prevCol], tempGrid[row][col]] = [tempGrid[row][col], tempGrid[prevRow][prevCol]];
 
-        const matches = checkMatches(tempGrid);
+        const { matches } = checkMatches(tempGrid);
         if (matches.length > 0) {
           setMovesLeft((prev) => {
             const newMoves = prev - 1;
@@ -415,7 +545,6 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
 
   const handleTouchMove = (e) => {
     e.preventDefault();
-    // Optional: Add visual feedback here if desired (e.g., slight tile movement)
   };
 
   const handleTouchEnd = (e) => {
@@ -425,36 +554,23 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - touchStart.x;
     const deltaY = touch.clientY - touchStart.y;
-    const minSwipeDistance = 30; // Minimum distance to consider it a swipe
+    const minSwipeDistance = 30;
 
     const { row, col } = touchStart;
 
-    // Determine swipe direction
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-      // Horizontal swipe
-      if (deltaX > 0 && col < 5) {
-        // Swipe right
-        attemptSwap(row, col + 1);
-      } else if (deltaX < 0 && col > 0) {
-        // Swipe left
-        attemptSwap(row, col - 1);
-      }
+      if (deltaX > 0 && col < 5) attemptSwap(row, col + 1);
+      else if (deltaX < 0 && col > 0) attemptSwap(row, col - 1);
     } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
-      // Vertical swipe
-      if (deltaY > 0 && row < 5) {
-        // Swipe down
-        attemptSwap(row + 1, col);
-      } else if (deltaY < 0 && row > 0) {
-        // Swipe up
-        attemptSwap(row - 1, col);
-      }
+      if (deltaY > 0 && row < 5) attemptSwap(row + 1, col);
+      else if (deltaY < 0 && row > 0) attemptSwap(row - 1, col);
     }
 
     setSelectedTile(null);
     setTouchStart(null);
   };
 
-  if (!grid) return null;
+  if (!grid) return <div>Loading...</div>;
 
   return (
     <div className="game-container">
@@ -476,6 +592,7 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
         droppingTiles={droppingTiles}
         scorePopups={scorePopups}
         swappingTiles={swappingTiles}
+        tileAnimations={tileAnimations}
       />
     </div>
   );
