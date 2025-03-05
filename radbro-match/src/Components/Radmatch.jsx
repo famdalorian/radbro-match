@@ -198,6 +198,7 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
 
   const [grid, setGrid] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
+  const [touchStart, setTouchStart] = useState(null); // Added for touch tracking
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [movesLeft, setMovesLeft] = useState(difficulties[difficulty].moves);
@@ -408,14 +409,49 @@ function Radmatch({ difficulty, highScore, updateHighScore, onGameOver }) {
   const handleTouchStart = (e, row, col) => {
     e.preventDefault();
     setSelectedTile({ row, col });
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY, row, col });
   };
 
   const handleTouchMove = (e) => {
     e.preventDefault();
+    // Optional: Add visual feedback here if desired (e.g., slight tile movement)
   };
 
   const handleTouchEnd = (e) => {
     e.preventDefault();
+    if (!touchStart || !selectedTile) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = touch.clientY - touchStart.y;
+    const minSwipeDistance = 30; // Minimum distance to consider it a swipe
+
+    const { row, col } = touchStart;
+
+    // Determine swipe direction
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+      // Horizontal swipe
+      if (deltaX > 0 && col < 5) {
+        // Swipe right
+        attemptSwap(row, col + 1);
+      } else if (deltaX < 0 && col > 0) {
+        // Swipe left
+        attemptSwap(row, col - 1);
+      }
+    } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
+      // Vertical swipe
+      if (deltaY > 0 && row < 5) {
+        // Swipe down
+        attemptSwap(row + 1, col);
+      } else if (deltaY < 0 && row > 0) {
+        // Swipe up
+        attemptSwap(row - 1, col);
+      }
+    }
+
+    setSelectedTile(null);
+    setTouchStart(null);
   };
 
   if (!grid) return null;
