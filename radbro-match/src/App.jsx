@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Radmatch from './Components/Radmatch';
 import GameMenu from './Components/GameMenu';
+import Particles from 'react-particles';
+import { loadFull } from 'tsparticles';
 import { AnimatePresence } from 'framer-motion';
 import { FaBars } from 'react-icons/fa';
 
@@ -37,6 +39,58 @@ function App() {
     setGameState('menu');
   };
 
+  const particlesInit = async (main) => {
+    await loadFull(main);
+  };
+
+  // Updated particle options with more particles
+  const particlesOptions = {
+    particles: {
+      number: {
+        value: 80, // Increased number of particles for more density
+        density: {
+          enable: true,
+          value_area: 800, // Slightly reduced area to make particles more concentrated
+        },
+      },
+      color: {
+        value: ['#FF00FF', '#00FFFF', '#00FF00'], // Neon colors
+      },
+      shape: {
+        type: 'circle',
+      },
+      opacity: {
+        value: 0.6, // Increased opacity for more visibility
+        random: true,
+      },
+      size: {
+        value: 30, // Slightly larger particles
+        random: { enable: true, minimumValue: 1.5 },
+      },
+      move: {
+        enable: true,
+        speed: 3, // Slightly increased speed for a more dynamic effect
+        direction: 'none',
+        random: true,
+        out_mode: 'out',
+      },
+    },
+    interactivity: {
+      events: {
+        onhover: {
+          enable: true,
+          mode: 'repulse',
+        },
+      },
+      modes: {
+        repulse: {
+          distance: 100,
+          duration: 0.4,
+        },
+      },
+    },
+  };
+
   if (gameState !== 'menu') {
     return (
       <div className="App">
@@ -59,6 +113,7 @@ function App() {
 
   return (
     <div className="App home">
+      <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
       <div className={`hamburger-menu ${isMenuOpen ? 'hidden' : ''}`}>
         <FaBars className="menu-icon" onClick={() => setIsMenuOpen(true)} />
       </div>
