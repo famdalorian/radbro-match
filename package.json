@@ -8,6 +8,7 @@
     "install-all": "npm install && npm install --prefix radbro-match && npm install --prefix backend"
   },
   "dependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "dotenv": "^16.4.7"
   }
 }
