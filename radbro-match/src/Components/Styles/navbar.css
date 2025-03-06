@@ -1,0 +1,149 @@
+/* navbar.css */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+:root {
+  --nav-bg: linear-gradient(90deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+  --nav-border: 2px solid #00FFFF;
+  --nav-shadow: 0 0 10px #00FFFF;
+  --nav-link-color: #00FFFF;
+  --nav-link-shadow: 0 0 5px #FF00FF, 0 0 10px #00FFFF;
+  --nav-font-family: 'Orbitron', sans-serif;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: var(--nav-bg);
+  border-bottom: var(--nav-border);
+  box-shadow: var(--nav-shadow);
+  z-index: 1000;
+  font-family: var(--nav-font-family);
+  backdrop-filter: blur(5px);
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px; /* Constrain width to prevent overflow */
+  margin: 0 auto;
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+
+.hamburger-menu {
+  display: none; /* Hidden on desktop */
+}
+
+.menu-icon {
+  font-size: 24px;
+  color: var(--nav-link-color);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.menu-icon:hover {
+  transform: scale(1.1);
+  color: #FF00FF;
+}
+
+.nav-links {
+  display: flex;
+}
+
+.nav-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: var(--nav-link-color);
+  text-decoration: none;
+  font-size: 1rem;
+  text-transform: uppercase; /* Match the screenshot's style */
+  text-shadow: var(--nav-link-shadow);
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.nav-links a:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 10px #00FFFF, 0 0 15px #FF00FF;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet-adapter-button {
+  background-color: transparent;
+  border: 2px solid var(--nav-link-color);
+  color: var(--nav-link-color);
+  font-family: var(--nav-font-family);
+  font-size: 1rem;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: var(--nav-link-shadow);
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wallet-adapter-button:hover {
+  background-color: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 10px var(--nav-link-color);
+  transform: scale(1.05);
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: block;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: var(--nav-bg);
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .nav-links.open {
+    transform: translateY(0);
+  }
+
+  .nav-links ul {
+    flex-direction: column;
+    padding: 20px;
+    gap: 15px;
+  }
+
+  .user-area {
+    margin-top: 10px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .wallet-adapter-button {
+    max-width: 200px;
+    width: 100%;
+  }
+}

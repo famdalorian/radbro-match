@@ -5,10 +5,10 @@ import GameMenu from './Components/GameMenu';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import { AnimatePresence } from 'framer-motion';
-import { FaBars } from 'react-icons/fa';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'; // Import WalletMultiButton
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'; // Import WalletModalProvider
-import '@solana/wallet-adapter-react-ui/styles.css'; // Import styles for the wallet UI
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import '@solana/wallet-adapter-react-ui/styles.css';
+import NavBar from './Components/NavBar';
+import Footer from './Components/Footer';
 
 function App() {
   const [highScore, setHighScore] = useState(() => {
@@ -48,66 +48,23 @@ function App() {
 
   const particlesOptions = {
     particles: {
-      number: {
-        value: 80,
-        density: {
-          enable: true,
-          value_area: 800,
-        },
-      },
-      color: {
-        value: ['#FF00FF', '#00FFFF', '#00FF00'],
-      },
-      shape: {
-        type: 'circle',
-      },
-      opacity: {
-        value: 0.6,
-        random: true,
-      },
-      size: {
-        value: 30,
-        random: { enable: true, minimumValue: 1.5 },
-      },
-      move: {
-        enable: true,
-        speed: 3,
-        direction: 'none',
-        random: true,
-        out_mode: 'out',
-      },
+      number: { value: 80, density: { enable: true, value_area: 800 } },
+      color: { value: ['#FF00FF', '#00FFFF', '#00FF00'] },
+      shape: { type: 'circle' },
+      opacity: { value: 0.6, random: true },
+      size: { value: 30, random: { enable: true, minimumValue: 1.5 } },
+      move: { enable: true, speed: 3, direction: 'none', random: true, out_mode: 'out' },
     },
     interactivity: {
-      events: {
-        onhover: {
-          enable: true,
-          mode: 'repulse',
-        },
-      },
-      modes: {
-        repulse: {
-          distance: 100,
-          duration: 0.4,
-        },
-      },
+      events: { onhover: { enable: true, mode: 'repulse' } },
+      modes: { repulse: { distance: 100, duration: 0.4 } },
     },
   };
 
   return (
-    // Wrap the app content with WalletModalProvider to enable wallet selection modal
     <WalletModalProvider>
       <div className="App">
-        {/* Header with hamburger menu and WalletMultiButton */}
-        <div className="header">
-          <div className={`hamburger-menu ${isMenuOpen ? 'hidden' : ''}`}>
-            <FaBars className="menu-icon" onClick={() => setIsMenuOpen(true)} />
-          </div>
-          <div className="user-area">
-            <WalletMultiButton /> {/* Add WalletMultiButton for wallet connection */}
-          </div>
-        </div>
-
-        {/* Game Menu */}
+        <NavBar />
         <AnimatePresence>
           {isMenuOpen && (
             <GameMenu
@@ -118,12 +75,11 @@ function App() {
           )}
         </AnimatePresence>
 
-        {/* Main Content */}
         {gameState === 'menu' ? (
           <div className="home-content">
             <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
             <div className="hero-section">
-              <h1 className="hero-title">Radbro Games Hub</h1>
+              <h1 className="hero-title">Radmatch Games Hub</h1>
               <div className="high-score">High Score: {highScore}</div>
               <div className="featured-game">
                 <h2>Featured Game: Radbro Match</h2>
@@ -150,13 +106,7 @@ function App() {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="footer">
-          Built by{' '}
-          <a href="https://x.com/Famdalorian" target="_blank" rel="noopener noreferrer">
-            @Famdalorian
-          </a>
-        </div>
+        <Footer />
       </div>
     </WalletModalProvider>
   );
