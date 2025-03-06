@@ -115,20 +115,29 @@
 
 /* Desktop Styles (above 768px) */
 @media (min-width: 769px) {
+  .navbar-container {
+    flex-wrap: nowrap;
+    justify-content: flex-start; /* Changed to allow custom positioning */
+  }
+
+  .hamburger-menu {
+    flex-shrink: 0; /* Prevent shrinking */
+  }
+
   .nav-links {
     display: flex !important; /* Always visible on desktop */
+    flex-grow: 1; /* Allow it to take available space */
+    justify-content: center; /* Center the nav links */
   }
 
   .nav-links ul {
     flex-direction: row;
+    justify-content: center; /* Center the list items */
   }
 
-  .navbar-container {
-    flex-wrap: nowrap;
-  }
-  
   .wallet-button {
-    margin-left: auto; /* Keep it on right side for desktop too */
+    margin-left: auto; /* Push to right */
+    flex-shrink: 0; /* Prevent shrinking */
   }
 }
 
