@@ -11,7 +11,7 @@ const GameMenu = ({ isOpen, onClose, onSelectGame, goToLeaderboard, backToMenu }
   ];
 
   const navLinks = [
-    { name: 'Home', action: backToMenu || (() => { console.log('backToMenu not provided'); onClose(); }) }, // Use backToMenu with fallback
+    { name: 'Home', action: backToMenu || (() => { console.log('backToMenu not provided'); onClose(); }) },
     { name: 'Play Game', action: () => onSelectGame('easy', 'radmatch') },
     { name: 'Leaderboard', action: goToLeaderboard || (() => { console.log('goToLeaderboard not provided'); onClose(); }) },
     { name: 'About', action: () => { onClose(); } },

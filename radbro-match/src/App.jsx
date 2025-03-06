@@ -6,12 +6,13 @@ import LeaderBoard from './Pages/LeaderBoard';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import { AnimatePresence } from 'framer-motion';
-import { WalletModalProvider, useWallet } from '@solana/wallet-adapter-react-ui'; // Add useWallet
-import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react'; // Add Solana wallet hook
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import NavBar from './Components/NavBar';
 import Footer from './Components/Footer';
-import axios from 'axios'; // Add axios import
+import axios from 'axios';
+import WalletModal from './Components/WalletModal';
 
 function App() {
   const [highScore, setHighScore] = useState(() => {
@@ -21,13 +22,19 @@ function App() {
   const [gameState, setGameState] = useState('menu');
   const [difficulty, setDifficulty] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { publicKey } = useSolanaWallet(); // Get the connected wallet's public key
+  const { publicKey, connected } = useSolanaWallet();
+  const [playerName, setPlayerName] = useState('');
+  const [customName, setCustomName] = useState('');
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   useEffect(() => {
-    if (gameState === 'menu') {
-      document.documentElement.className = 'theme-0';
+    if (publicKey && connected) {
+      const truncatedKey = publicKey.toString().slice(0, 8) + '...';
+      setPlayerName(customName || truncatedKey);
+    } else {
+      setPlayerName('');
     }
-  }, [gameState]);
+  }, [publicKey, connected, customName]); // Added 'connected' to dependencies
 
   const updateHighScore = (newScore) => {
     if (newScore > highScore) {
@@ -38,16 +45,14 @@ function App() {
 
   const submitScore = async () => {
     if (!publicKey) {
-      console.log('No wallet connected. Cannot submit score.');
-      alert('Please connect your wallet to submit your score!');
+      console.log('No wallet connected. Score not submitted.');
       return;
     }
 
-    const playerName = publicKey.toString().slice(0, 8) + '...'; // Truncate public key for display
     try {
       const response = await axios.post('http://localhost:5000/api/scores', {
         name: playerName,
-        score: highScore
+        score: highScore,
       });
       console.log('Score submitted:', response.data);
     } catch (error) {
@@ -55,9 +60,25 @@ function App() {
     }
   };
 
-  const startGame = (mode, game) => {
-    setDifficulty(mode);
-    setGameState(game);
+  const handleStartGame = (mode, game) => {
+    if (!publicKey) {
+      setShowWalletModal(true);
+    } else {
+      setDifficulty(mode);
+      setGameState(game);
+      setIsMenuOpen(false);
+    }
+  };
+
+  const handleConnectWallet = (name) => {
+    setCustomName(name);
+    setShowWalletModal(false);
+  };
+
+  const handleProceedWithoutWallet = () => {
+    setShowWalletModal(false);
+    setDifficulty('easy');
+    setGameState('radmatch');
     setIsMenuOpen(false);
   };
 
@@ -68,8 +89,8 @@ function App() {
 
   const onGameOver = () => {
     setGameState('menu');
-    if (highScore > 0) {
-      submitScore(); // Submit score when game ends
+    if (publicKey && highScore > 0) {
+      submitScore();
     }
   };
 
@@ -98,11 +119,12 @@ function App() {
 
   return (
     <WalletModalProvider>
-      <div className="App">
-        <NavBar 
-          setIsMenuOpen={setIsMenuOpen} 
-          isMenuOpen={isMenuOpen} 
-          onSelectGame={startGame}
+      <div className="App theme-0">
+        <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
+        <NavBar
+          setIsMenuOpen={setIsMenuOpen}
+          isMenuOpen={isMenuOpen}
+          onSelectGame={handleStartGame}
           goToLeaderboard={goToLeaderboard}
           backToMenu={backToMenu}
         />
@@ -111,7 +133,7 @@ function App() {
             <GameMenu
               isOpen={isMenuOpen}
               onClose={() => setIsMenuOpen(false)}
-              onSelectGame={startGame}
+              onSelectGame={handleStartGame}
               goToLeaderboard={goToLeaderboard}
               backToMenu={backToMenu}
               className={`game-menu ${isMenuOpen ? 'active' : ''}`}
@@ -119,25 +141,36 @@ function App() {
           )}
         </AnimatePresence>
 
+        {showWalletModal && (
+          <WalletModal
+            onClose={() => setShowWalletModal(false)}
+            onConnect={handleConnectWallet}
+            onProceedWithoutWallet={handleProceedWithoutWallet}
+          />
+        )}
+
         {gameState === 'menu' ? (
           <div className="home-content">
-            <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
             <div className="hero-section">
               <h1 className="hero-title">Radmatch Games Hub</h1>
               <div className="high-score">High Score: {highScore}</div>
+              <div className="player-info">
+                {publicKey ? (
+                  <p>Connected as: {playerName}</p>
+                ) : (
+                  <button onClick={() => setShowWalletModal(true)}>Connect Wallet to Play</button>
+                )}
+              </div>
               <div className="featured-game">
                 <h2>Featured Game: Radbro Match</h2>
                 <p>Match Radbro NFTs to score points in this neon-powered puzzle game!</p>
                 <button
                   className="play-now-btn"
-                  onClick={() => startGame('easy', 'radmatch')}
+                  onClick={() => handleStartGame('easy', 'radmatch')}
                 >
                   Play Now
                 </button>
-                <button
-                  className="leaderboard-btn"
-                  onClick={goToLeaderboard}
-                >
+                <button className="leaderboard-btn" onClick={goToLeaderboard}>
                   View Leaderboard
                 </button>
               </div>
@@ -150,6 +183,7 @@ function App() {
               highScore={highScore}
               updateHighScore={updateHighScore}
               onGameOver={onGameOver}
+              playerName={playerName}
             />
           </div>
         ) : gameState === 'leaderboard' ? (

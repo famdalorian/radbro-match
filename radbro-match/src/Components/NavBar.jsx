@@ -4,7 +4,13 @@ import { FaBars } from 'react-icons/fa';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import GameMenu from './GameMenu';
 
-const NavBar = ({ isMenuOpen, setIsMenuOpen, onSelectGame, goToLeaderboard }) => {
+const NavBar = ({
+  isMenuOpen,
+  setIsMenuOpen,
+  onSelectGame,
+  goToLeaderboard,
+  backToMenu,
+}) => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -23,11 +29,12 @@ const NavBar = ({ isMenuOpen, setIsMenuOpen, onSelectGame, goToLeaderboard }) =>
           </div>
         </div>
       </header>
-      <GameMenu 
-        isOpen={isMenuOpen} 
-        onClose={toggleMenu} 
+      <GameMenu
+        isOpen={isMenuOpen}
+        onClose={toggleMenu}
         onSelectGame={onSelectGame}
-        goToLeaderboard={goToLeaderboard} // Ensure this is passed
+        goToLeaderboard={goToLeaderboard}
+        backToMenu={backToMenu}
       />
     </>
   );

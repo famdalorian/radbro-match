@@ -1,19 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config(); // Add this line to load .env variables
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB Atlas using environment variable
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://hunytrip:48pkxCN0VxIxOSv0@radmatch.nvmaj.mongodb.net/leaderboard?retryWrites=true&w=majority', {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Score Model
 const ScoreSchema = new mongoose.Schema({
   name: { type: String, required: true },
   score: { type: Number, required: true },
@@ -21,12 +21,10 @@ const ScoreSchema = new mongoose.Schema({
 });
 const Score = mongoose.model('Score', ScoreSchema);
 
-// Root route (optional)
 app.get('/', (req, res) => {
   res.send('Backend is running! Use /api/leaderboard or /api/scores for API endpoints.');
 });
 
-// POST /api/scores
 app.post('/api/scores', async (req, res) => {
   const { name, score } = req.body;
   console.log('Received data:', { name, score });
@@ -41,7 +39,6 @@ app.post('/api/scores', async (req, res) => {
   }
 });
 
-// GET /api/scores
 app.get('/api/scores', async (req, res) => {
   try {
     const scores = await Score.find();
@@ -52,7 +49,6 @@ app.get('/api/scores', async (req, res) => {
   }
 });
 
-// GET /api/leaderboard
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const scores = await Score.find().sort({ score: -1 }).limit(10);
@@ -63,5 +59,4 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-// Export the app for Vercel
 module.exports = app;

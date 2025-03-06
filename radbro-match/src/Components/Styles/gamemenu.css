@@ -3,9 +3,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 300px; /* Adjust as needed */
+  width: 300px;
   height: 100%;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.85)); /* Increased opacity */
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.85));
   color: #00FFFF;
   font-family: 'Orbitron', sans-serif;
   padding: 20px;
@@ -13,6 +13,7 @@
   overflow-y: auto;
 }
 
+/* Header */
 .menu-header {
   display: flex;
   justify-content: space-between;
@@ -36,24 +37,18 @@
   color: #FF00FF;
 }
 
-/* Navigation Section */
-.nav-section {
-  margin-bottom: 30px;
-}
-
-.nav-section h3 {
+/* Navigation */
+.nav-section h3,
+.games-section h3 {
   font-size: 1.2rem;
   margin-bottom: 10px;
   text-shadow: 0 0 5px #00FFFF;
 }
 
-.nav-list {
+.nav-list,
+.game-list {
   list-style: none;
   padding: 0;
-}
-
-.nav-item {
-  margin-bottom: 15px;
 }
 
 .nav-item a {
@@ -61,42 +56,16 @@
   text-decoration: none;
   font-size: 1rem;
   text-transform: uppercase;
-  text-shadow: 0 0 5px #FF00FF, 0 0 10px #00FFFF;
-  transition: transform 0.3s ease, text-shadow 0.3s ease;
+  text-shadow: 0 0 5px #FF00FF;
+  transition: transform 0.3s ease;
 }
 
 .nav-item a:hover {
   transform: scale(1.1);
-  text-shadow: 0 0 10px #00FFFF, 0 0 15px #FF00FF;
+  text-shadow: 0 0 10px #00FFFF;
 }
 
-/* Games Section */
-.games-section h3 {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  text-shadow: 0 0 5px #00FFFF;
-}
-
-.game-list {
-  list-style: none;
-  padding: 0;
-}
-
-.game-item {
-  margin-bottom: 20px;
-}
-
-.game-item span {
-  font-size: 1rem;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.difficulty-options {
-  display: flex;
-  gap: 10px;
-}
-
+/* Games */
 .difficulty-options button {
   background: transparent;
   border: 1px solid #00FFFF;
