@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import '../Components/Styles/navbar.css'; // Adjusted path to match your structure
+import React from 'react';
+import '../Components/Styles/navbar.css';
 import { FaBars } from 'react-icons/fa';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-const NavBar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+const NavBar = ({ isMenuOpen, setIsMenuOpen }) => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -18,6 +16,9 @@ const NavBar = () => {
             <FaBars />
           </button>
         </div>
+        <div className="wallet-button">
+          <WalletMultiButton />
+        </div>
         <nav className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
           <ul>
             <li><a href="/">HOME</a></li>
@@ -26,7 +27,6 @@ const NavBar = () => {
             <li><a href="/about">ABOUT</a></li>
           </ul>
         </nav>
-          <WalletMultiButton />
       </div>
     </header>
   );

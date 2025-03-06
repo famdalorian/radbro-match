@@ -25,9 +25,10 @@ const GameMenu = ({ isOpen, onClose, onSelectGame }) => {
   return (
     <motion.div
       className="game-menu"
-      initial={{ x: '-100%' }}
-      animate={{ x: isOpen ? 0 : '-100%' }}
+      initial={{ x: '-100%' }} // Start off-screen to the left
+      animate={{ x: isOpen ? 0 : '-100%' }} // Slide in/out
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      style={{ zIndex: 2000 }} // Higher z-index to appear above navbar
     >
       <div className="menu-header">
         <h2>Games</h2>

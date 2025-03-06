@@ -1,6 +1,7 @@
 /* Import root variables from App.css to reuse neon colors and shadows */
 @import url('../../App.css');
 
+/* Hamburger Menu */
 .hamburger-menu {
   position: fixed;
   top: clamp(0.5rem, 2vw, 1rem);
@@ -39,13 +40,22 @@
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 999;
+  z-index: 2000; /* Increased from 999 to appear above navbar (z-index 1000) */
   padding: clamp(0.5rem, 2vw, 1rem);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   overflow-y: auto;
+  transform: translateX(-100%); /* Initial off-screen position */
+  transition: transform 0.3s ease; /* Smooth slide transition */
 }
 
+/* Ensure menu shifts down to avoid navbar overlap */
+.game-menu.active {
+  transform: translateX(0); /* Slide in when active */
+  padding-top: 70px; /* Offset to clear the fixed navbar (match navbar height) */
+}
+
+/* Menu Header */
 .menu-header {
   display: flex;
   justify-content: space-between;

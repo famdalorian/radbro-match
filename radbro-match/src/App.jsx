@@ -64,13 +64,14 @@ function App() {
   return (
     <WalletModalProvider>
       <div className="App">
-        <NavBar />
+        <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen} /> {/* Pass state to NavBar */}
         <AnimatePresence>
           {isMenuOpen && (
             <GameMenu
               isOpen={isMenuOpen}
               onClose={() => setIsMenuOpen(false)}
               onSelectGame={startGame}
+              className={`game-menu ${isMenuOpen ? 'active' : ''}`}
             />
           )}
         </AnimatePresence>
@@ -79,7 +80,7 @@ function App() {
           <div className="home-content">
             <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
             <div className="hero-section">
-              <h1 className="hero-title">Radmatch Games Hub</h1>
+              <h1 className="hero-title">Radbro Games Hub</h1>
               <div className="high-score">High Score: {highScore}</div>
               <div className="featured-game">
                 <h2>Featured Game: Radbro Match</h2>
