@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import '../Components/Styles/gamemenu.css';
 
-const GameMenu = ({ isOpen, onClose, onSelectGame, goToLeaderboard }) => {
+const GameMenu = ({ isOpen, onClose, onSelectGame, goToLeaderboard, backToMenu }) => {
   const games = [
     { name: 'Radbro Match', key: 'radmatch', available: true },
     { name: 'Molady Puzzle', key: 'molady-puzzle', available: false },
@@ -11,9 +11,9 @@ const GameMenu = ({ isOpen, onClose, onSelectGame, goToLeaderboard }) => {
   ];
 
   const navLinks = [
-    { name: 'Home', action: () => { onClose(); } },
+    { name: 'Home', action: backToMenu || (() => { console.log('backToMenu not provided'); onClose(); }) }, // Use backToMenu with fallback
     { name: 'Play Game', action: () => onSelectGame('easy', 'radmatch') },
-    { name: 'Leaderboard', action: goToLeaderboard || (() => { console.log('goToLeaderboard not provided'); onClose(); }) }, // Fallback if undefined
+    { name: 'Leaderboard', action: goToLeaderboard || (() => { console.log('goToLeaderboard not provided'); onClose(); }) },
     { name: 'About', action: () => { onClose(); } },
   ];
 

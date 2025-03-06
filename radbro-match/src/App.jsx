@@ -78,7 +78,8 @@ function App() {
           setIsMenuOpen={setIsMenuOpen} 
           isMenuOpen={isMenuOpen} 
           onSelectGame={startGame}
-          goToLeaderboard={goToLeaderboard} // Ensure this is passed
+          goToLeaderboard={goToLeaderboard}
+          backToMenu={backToMenu} // Add this
         />
         <AnimatePresence>
           {isMenuOpen && (
@@ -86,7 +87,8 @@ function App() {
               isOpen={isMenuOpen}
               onClose={() => setIsMenuOpen(false)}
               onSelectGame={startGame}
-              goToLeaderboard={goToLeaderboard} // Optional: direct pass if not via NavBar
+              goToLeaderboard={goToLeaderboard}
+              backToMenu={backToMenu} // Optional: direct pass
               className={`game-menu ${isMenuOpen ? 'active' : ''}`}
             />
           )}
