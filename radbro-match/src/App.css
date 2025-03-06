@@ -223,6 +223,26 @@ body {
   box-shadow: 0 0 15px var(--score-color);
 }
 
+.leaderboard-btn {
+  background: transparent;
+  border: 2px solid var(--score-color);
+  color: var(--score-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  cursor: pointer;
+  text-shadow: var(--score-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  margin-left: 0.5rem; /* Space from play-now-btn */
+}
+
+.leaderboard-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px var(--score-color);
+  background: rgba(0, 255, 255, 0.1); /* Slight cyan tint on hover */
+}
+
 /* Game styles */
 .game-container {
   display: flex;

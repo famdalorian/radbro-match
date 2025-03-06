@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Radmatch from './Components/Radmatch';
 import GameMenu from './Components/GameMenu';
+import LeaderBoard from './Pages/LeaderBoard';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import { AnimatePresence } from 'framer-motion';
@@ -38,7 +39,16 @@ function App() {
     setIsMenuOpen(false);
   };
 
+  const goToLeaderboard = () => {
+    setGameState('leaderboard');
+    setIsMenuOpen(false);
+  };
+
   const onGameOver = () => {
+    setGameState('menu');
+  };
+
+  const backToMenu = () => {
     setGameState('menu');
   };
 
@@ -64,13 +74,19 @@ function App() {
   return (
     <WalletModalProvider>
       <div className="App">
-        <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen} /> {/* Pass state to NavBar */}
+        <NavBar 
+          setIsMenuOpen={setIsMenuOpen} 
+          isMenuOpen={isMenuOpen} 
+          onSelectGame={startGame}
+          goToLeaderboard={goToLeaderboard} // Ensure this is passed
+        />
         <AnimatePresence>
           {isMenuOpen && (
             <GameMenu
               isOpen={isMenuOpen}
               onClose={() => setIsMenuOpen(false)}
               onSelectGame={startGame}
+              goToLeaderboard={goToLeaderboard} // Optional: direct pass if not via NavBar
               className={`game-menu ${isMenuOpen ? 'active' : ''}`}
             />
           )}
@@ -80,7 +96,7 @@ function App() {
           <div className="home-content">
             <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
             <div className="hero-section">
-              <h1 className="hero-title">Radbro Games Hub</h1>
+              <h1 className="hero-title">Radmatch Games Hub</h1>
               <div className="high-score">High Score: {highScore}</div>
               <div className="featured-game">
                 <h2>Featured Game: Radbro Match</h2>
@@ -91,21 +107,29 @@ function App() {
                 >
                   Play Now
                 </button>
+                <button
+                  className="leaderboard-btn"
+                  onClick={goToLeaderboard}
+                >
+                  View Leaderboard
+                </button>
               </div>
             </div>
           </div>
-        ) : (
+        ) : gameState === 'radmatch' ? (
           <div className="game-content">
-            {gameState === 'radmatch' && (
-              <Radmatch
-                difficulty={difficulty}
-                highScore={highScore}
-                updateHighScore={updateHighScore}
-                onGameOver={onGameOver}
-              />
-            )}
+            <Radmatch
+              difficulty={difficulty}
+              highScore={highScore}
+              updateHighScore={updateHighScore}
+              onGameOver={onGameOver}
+            />
           </div>
-        )}
+        ) : gameState === 'leaderboard' ? (
+          <div className="leaderboard-content">
+            <LeaderBoard highScore={highScore} onBackToMenu={backToMenu} />
+          </div>
+        ) : null}
 
         <Footer />
       </div>

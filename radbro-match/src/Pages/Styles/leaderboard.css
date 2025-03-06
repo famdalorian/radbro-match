@@ -1,0 +1,70 @@
+.leaderboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a, #000000);
+    color: #00FFFF;
+    font-family: 'Orbitron', sans-serif;
+    padding: 20px;
+  }
+  
+  .leaderboard-title {
+    font-size: 2.5rem;
+    text-shadow: 0 0 10px #00FFFF, 0 0 20px #FF00FF;
+    margin-bottom: 30px;
+  }
+  
+  .leaderboard-table {
+    width: 100%;
+    max-width: 600px;
+    border: 2px solid #00FFFF;
+    box-shadow: 0 0 15px #00FFFF;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .leaderboard-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    background: rgba(0, 255, 255, 0.1);
+    padding: 10px;
+    font-weight: bold;
+    text-shadow: 0 0 5px #FF00FF;
+  }
+  
+  .leaderboard-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    padding: 10px;
+    border-top: 1px solid rgba(0, 255, 255, 0.3);
+    transition: background 0.3s ease;
+  }
+  
+  .leaderboard-row:hover {
+    background: rgba(0, 255, 255, 0.05);
+  }
+  
+  .leaderboard-row span {
+    text-align: center;
+  }
+  
+  .back-btn {
+    margin-top: 20px;
+    background: transparent;
+    border: 2px solid #00FFFF;
+    color: #00FFFF;
+    padding: 10px 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    text-shadow: 0 0 5px #FF00FF;
+    transition: all 0.3s ease;
+  }
+  
+  .back-btn:hover {
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 10px #00FFFF;
+    transform: scale(1.05);
+  }
