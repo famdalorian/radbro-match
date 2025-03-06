@@ -6,10 +6,12 @@ import LeaderBoard from './Pages/LeaderBoard';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import { AnimatePresence } from 'framer-motion';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { WalletModalProvider, useWallet } from '@solana/wallet-adapter-react-ui'; // Add useWallet
+import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react'; // Add Solana wallet hook
 import '@solana/wallet-adapter-react-ui/styles.css';
 import NavBar from './Components/NavBar';
 import Footer from './Components/Footer';
+import axios from 'axios'; // Add axios import
 
 function App() {
   const [highScore, setHighScore] = useState(() => {
@@ -19,6 +21,7 @@ function App() {
   const [gameState, setGameState] = useState('menu');
   const [difficulty, setDifficulty] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { publicKey } = useSolanaWallet(); // Get the connected wallet's public key
 
   useEffect(() => {
     if (gameState === 'menu') {
@@ -30,6 +33,25 @@ function App() {
     if (newScore > highScore) {
       setHighScore(newScore);
       localStorage.setItem('highScore', newScore.toString());
+    }
+  };
+
+  const submitScore = async () => {
+    if (!publicKey) {
+      console.log('No wallet connected. Cannot submit score.');
+      alert('Please connect your wallet to submit your score!');
+      return;
+    }
+
+    const playerName = publicKey.toString().slice(0, 8) + '...'; // Truncate public key for display
+    try {
+      const response = await axios.post('http://localhost:5000/api/scores', {
+        name: playerName,
+        score: highScore
+      });
+      console.log('Score submitted:', response.data);
+    } catch (error) {
+      console.error('Error submitting score:', error);
     }
   };
 
@@ -46,6 +68,9 @@ function App() {
 
   const onGameOver = () => {
     setGameState('menu');
+    if (highScore > 0) {
+      submitScore(); // Submit score when game ends
+    }
   };
 
   const backToMenu = () => {
@@ -79,7 +104,7 @@ function App() {
           isMenuOpen={isMenuOpen} 
           onSelectGame={startGame}
           goToLeaderboard={goToLeaderboard}
-          backToMenu={backToMenu} // Add this
+          backToMenu={backToMenu}
         />
         <AnimatePresence>
           {isMenuOpen && (
@@ -88,7 +113,7 @@ function App() {
               onClose={() => setIsMenuOpen(false)}
               onSelectGame={startGame}
               goToLeaderboard={goToLeaderboard}
-              backToMenu={backToMenu} // Optional: direct pass
+              backToMenu={backToMenu}
               className={`game-menu ${isMenuOpen ? 'active' : ''}`}
             />
           )}
